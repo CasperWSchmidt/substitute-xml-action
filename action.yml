@@ -1,0 +1,16 @@
+name: "XML Key Substitution"
+description: "Replaces values in <add key='...'> or <add name='...'> using environment variables"
+inputs:
+  files:
+    required: true
+    description: "Newline-separated list of XML files"
+runs:
+  using: "composite"
+  steps:
+    - shell: pwsh
+      run: |
+        & "${{ github.action_path }}/substitue-xml.ps1" `
+          -Files ${{ inputs.files }}.Split("`n")
+branding:
+  icon: "file-text"
+  color: "green"
