@@ -12,6 +12,9 @@ It supports:
 
 - 🔁 Replaces values of `<add>` elements with matching `key` or `name` from environment variables
 - 🧾 Works for `web.config`, `app.config`, and other XML files
+- ✨ Supports **glob patterns** like `**/*.config`
+- 🚫 Skips duplicates automatically
+- 🛡️ Fails cleanly if no files matched
 - ⚙️ Fully cross-platform (Windows, Linux, macOS)
 - 🛡️ Ignores files that aren’t valid XML
 
@@ -42,8 +45,8 @@ It supports:
   uses: CasperWSchmidt/substitute-xml-action@v1
   with:
     files: |
+      deploy/**/*.config
       web.config
-      app.config
 ```
 
 ### 🔐 Environment variables
