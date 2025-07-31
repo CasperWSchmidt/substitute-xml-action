@@ -9,7 +9,7 @@ runs:
   steps:
     - shell: pwsh
       run: |
-        & "${{ github.action_path }}/substitue-xml.ps1" `
+        & "${{ github.action_path }}/substitute-xml.ps1" `
           -Files ${{ inputs.files }}.Split("`n")
 branding:
   icon: "file-text"
