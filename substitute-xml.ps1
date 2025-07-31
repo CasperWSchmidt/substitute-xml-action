@@ -1,8 +1,16 @@
 param (
-  [string[]]$Files
+  [string]$FilesList
 )
 
-Write-Host "🔄 Starting XML substitution based on `key` and `name` attributes..."
+Write-Host "🔄 Starting XML substitution based on ``key`` and ``name`` attributes..."
+
+$files = @()
+$inputFiles = @($FilesList -split "`n")
+foreach ($file in $inputFiles) {
+	if ($file.Trim()) {
+		$files += $file.Trim()
+	}
+}
 
 $envVars = [System.Environment]::GetEnvironmentVariables()
 
@@ -12,7 +20,7 @@ Write-Host "🔄 Resolving file paths..."
 # HashSet to store full paths (avoids duplicates)
 $resolved = [System.Collections.Generic.HashSet[string]]::new()
 
-foreach ($pattern in $Files) {
+foreach ($pattern in $files) {
   $matches = Get-ChildItem -Path $pattern -File -Recurse -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
   if (-not $matches) {
     Write-Warning "⚠️ No matches found for pattern: $pattern"

@@ -9,8 +9,7 @@ runs:
   steps:
     - shell: pwsh
       run: |
-        & "${{ github.action_path }}/substitute-xml.ps1" `
-          -Files ${{ inputs.files }}.Split("`n")
+        & "${{ github.action_path }}/substitute-xml.ps1" -FilesList ${{ inputs.files }}
 branding:
   icon: "file-text"
   color: "green"
