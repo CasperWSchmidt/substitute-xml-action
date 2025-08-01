@@ -13,6 +13,12 @@ foreach ($file in $inputFiles) {
 }
 
 $envVars = [System.Environment]::GetEnvironmentVariables()
+$caseInsensitiveEnvVars = New-Object System.Collections.Hashtable ([System.StringComparer]::OrdinalIgnoreCase)
+
+# Copy environment variables into it
+foreach ($key in $envVars.Keys) {
+    $caseInsensitiveEnvVars[$key] = $envVars[$key]
+}
 
 Write-Host "🔄 Resolving file paths..."
 
@@ -27,6 +33,7 @@ foreach ($pattern in $files) {
   }
 
   foreach ($file in $matches) {
+	Write-Host "Found: $file"
     $resolved.Add($file) | Out-Null
   }
 }
@@ -54,9 +61,9 @@ foreach ($file in $resolved) {
   foreach ($node in $xml.SelectNodes("//add")) {
     # Handle <add key="..." value="...">
     $keyAttr = $node.GetAttribute("key")
-    if ($keyAttr -and $envVars.ContainsKey($keyAttr)) {
+    if ($keyAttr -and $caseInsensitiveEnvVars.ContainsKey($keyAttr)) {
       $old = $node.GetAttribute("value")
-      $new = $envVars[$keyAttr]
+      $new = $caseInsensitiveEnvVars[$keyAttr]
       if ($old -ne $new) {
         $node.SetAttribute("value", $new)
         Write-Host "🔁 Updated key='$keyAttr': '$old' → '$new'"
@@ -66,9 +73,9 @@ foreach ($file in $resolved) {
 
     # Handle <add name="..." connectionString="...">
     $nameAttr = $node.GetAttribute("name")
-    if ($nameAttr -and $envVars.ContainsKey($nameAttr)) {
+    if ($nameAttr -and $caseInsensitiveEnvVars.ContainsKey($nameAttr)) {
       $old = $node.GetAttribute("connectionString")
-      $new = $envVars[$nameAttr]
+      $new = $caseInsensitiveEnvVars[$nameAttr]
       if ($old -ne $new) {
         $node.SetAttribute("connectionString", $new)
         Write-Host "🔁 Updated name='$nameAttr': '$old' → '$new'"
