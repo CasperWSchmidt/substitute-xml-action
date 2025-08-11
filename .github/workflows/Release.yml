@@ -59,7 +59,7 @@ jobs:
 #        if: steps.bump.outputs.skip_release != 'true'
         run: npm run build
 
-      - name: 🔢 Bump version and commit
+       - name: 🔢 Bump version and commit
 #        if: steps.bump.outputs.skip_release != 'true'
         id: versioning
         run: |
