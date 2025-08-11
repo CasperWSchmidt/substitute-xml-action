@@ -59,24 +59,40 @@ jobs:
 #        if: steps.bump.outputs.skip_release != 'true'
         run: npm run build
 
-       - name: 🔢 Bump version and commit
+#       - name: 🔢 Bump version and commit
 #        if: steps.bump.outputs.skip_release != 'true'
+#        id: versioning
+#        run: |
+#          git config user.name "github-actions"
+#          git config user.email "github-actions@github.com"
+
+#          NEW_VERSION=v$(npm version ${{ steps.bump.outputs.bump }} --no-git-tag-version)
+#          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+#          git add package.json package-lock.json dist/
+#          git commit -m "chore(release): release $NEW_VERSION" || echo "No changes to commit"
+          
+       - name: 🔢 Bump version and commit
         id: versioning
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-#          NEW_VERSION=v$(npm version ${{ steps.bump.outputs.bump }} --no-git-tag-version)
-#          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
           git add package.json package-lock.json dist/
-#          git commit -m "chore(release): release $NEW_VERSION" || echo "No changes to commit"
           git commit -m "chore(release): release ${{ inputs.configuration }}" || echo "No changes to commit"
 
-      - name: 🏷️ Create and push version tag
+#      - name: 🏷️ Create and push version tag
 #        if: steps.bump.outputs.skip_release != 'true'
-        run: |
+#        run: |
 #          VERSION=${{ steps.versioning.outputs.new_version }}
+#          git tag $VERSION
+#          git tag -f v1
+#          git push origin $VERSION
+#          git push origin v1 --force
+#          git push origin HEAD
+          
+       - name: 🏷️ Create and push version tag
+        run: |
           VERSION=${{ inputs.configuration }}
           git tag $VERSION
           git tag -f v1
@@ -84,14 +100,22 @@ jobs:
           git push origin v1 --force
           git push origin HEAD
 
+
       - name: 🚀 Create GitHub Release
-#        if: steps.bump.outputs.skip_release != 'true'
         uses: softprops/action-gh-release@v2
         with:
-#          tag_name: ${{ steps.versioning.outputs.new_version }}
-#          name: Release ${{ steps.versioning.outputs.new_version }}
           tag_name: ${{ inputs.configuration }}
           name: Release ${{ inputs.configuration }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+#      - name: 🚀 Create GitHub Release
+#        if: steps.bump.outputs.skip_release != 'true'
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: ${{ steps.versioning.outputs.new_version }}
+#          name: Release ${{ steps.versioning.outputs.new_version }}
+#          generate_release_notes: true
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
