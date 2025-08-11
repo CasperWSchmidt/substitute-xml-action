@@ -52,7 +52,7 @@ jobs:
 #          echo "skip_release=false" >> $GITHUB_OUTPUT
 
       - name: ❌ Exit if no release is needed
-#        if: steps.bump.outputs.skip_release == 'true'
+#        if: steps.bump.outputs.skip_release != 'true'
         run: echo "✅ No release needed."
 
       - name: 🛠️ Build and bundle Action
@@ -72,7 +72,7 @@ jobs:
 #          git add package.json package-lock.json dist/
 #          git commit -m "chore(release): release $NEW_VERSION" || echo "No changes to commit"
           
-       - name: 🔢 Bump version and commit
+      - name: 🔢 Bump version and commit
         id: versioning
         run: |
           git config user.name "github-actions"
@@ -91,7 +91,7 @@ jobs:
 #          git push origin v1 --force
 #          git push origin HEAD
           
-       - name: 🏷️ Create and push version tag
+      - name: 🏷️ Create and push version tag
         run: |
           VERSION=${{ inputs.configuration }}
           git tag $VERSION
