@@ -33,7 +33,6 @@ It supports:
 - ✅ ubuntu-latest
 - ✅ windows-latest
 - ✅ macos-latest
-- 🔧 Requires PowerShell Core
 
 ---
 

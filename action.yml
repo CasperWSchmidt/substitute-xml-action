@@ -5,11 +5,8 @@ inputs:
     required: true
     description: "Newline-separated list of XML files"
 runs:
-  using: "composite"
-  steps:
-    - shell: pwsh
-      run: |
-        & "${{ github.action_path }}/substitute-xml.ps1" -FilesList "${{ inputs.files }}"
+  using: "node20"
+  main: "dist/index.js"
 branding:
   icon: "file-text"
   color: "green"
