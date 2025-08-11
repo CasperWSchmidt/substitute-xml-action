@@ -30306,7 +30306,11 @@ async function run() {
             core.setFailed('❌ No valid files found. Exiting.');
             return;
         }
-        const env = process.env;
+        // Build case-insensitive environment variable map
+        const envMap = new Map();
+        for (const [k, v] of Object.entries(process.env)) {
+            envMap.set(k.toLowerCase(), v ?? '');
+        }
         const parser = new fast_xml_parser_1.XMLParser({ ignoreAttributes: false, attributeNamePrefix: '' });
         const builder = new fast_xml_parser_1.XMLBuilder({ ignoreAttributes: false, attributeNamePrefix: '', format: true });
         for (const file of resolvedFiles) {
@@ -30331,16 +30335,18 @@ async function run() {
             let updated = false;
             const addNodes = Array.isArray(appSettings) ? appSettings : [appSettings];
             for (const node of addNodes) {
-                if (node.key && env[node.key.toUpperCase()] !== undefined) {
-                    const newVal = env[node.key.toUpperCase()];
+                // Match "key" attribute (case-insensitive)
+                if (node.key && envMap.has(node.key.toLowerCase())) {
+                    const newVal = envMap.get(node.key.toLowerCase());
                     if (node.value !== newVal) {
                         core.info(`🔁 Updated key='${node.key}': '${node.value}' → '${newVal}'`);
                         node.value = newVal;
                         updated = true;
                     }
                 }
-                if (node.name && env[node.name.toUpperCase()] !== undefined) {
-                    const newVal = env[node.name.toUpperCase()];
+                // Match "name" attribute (case-insensitive)
+                if (node.name && envMap.has(node.name.toLowerCase())) {
+                    const newVal = envMap.get(node.name.toLowerCase());
                     if (node.connectionString !== newVal) {
                         core.info(`🔁 Updated name='${node.name}': '${node.connectionString}' → '${newVal}'`);
                         node.connectionString = newVal;
