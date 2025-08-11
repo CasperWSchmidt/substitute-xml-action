@@ -82,7 +82,7 @@ jobs:
           git config user.email "github-actions@github.com"
 
           git add package.json package-lock.json dist/
-          git commit -m "chore(release): release ${{ inputs.configuration }}" || echo "No changes to commit"
+          git commit -m "chore(release): release ${{ inputs.version }}" || echo "No changes to commit"
 
 #      - name: 🏷️ Create and push version tag
 #        if: steps.bump.outputs.skip_release != 'true'
@@ -96,7 +96,7 @@ jobs:
           
       - name: 🏷️ Create and push version tag
         run: |
-          VERSION=${{ inputs.configuration }}
+          VERSION=${{ inputs.version }}
           git tag $VERSION
           git tag -f v1
           git push origin $VERSION
@@ -107,8 +107,8 @@ jobs:
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.configuration }}
-          name: Release ${{ inputs.configuration }}
+          tag_name: ${{ inputs.version }}
+          name: Release ${{ inputs.version }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
