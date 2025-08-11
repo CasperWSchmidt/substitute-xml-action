@@ -1,0 +1,92 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required to access all commits + tags
+
+      - name: 🟢 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔖 Get latest version tag
+        id: last-tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "last_tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Last tag: $TAG"
+
+      - name: 📈 Detect bump type from commits since last tag
+        id: bump
+        run: |
+          npm install -g conventional-recommended-bump conventional-changelog-conventionalcommits
+
+          echo "Looking for commits after: ${{ steps.last-tag.outputs.last_tag }}"
+          COMMITS=$(git log --format=%B ${{ steps.last-tag.outputs.last_tag }}..HEAD)
+
+          if [ -z "$COMMITS" ]; then
+            echo "🛑 No new commits since last tag. Skipping release."
+            echo "skip_release=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "$COMMITS" > commits.txt
+
+          BUMP=$(conventional-recommended-bump -p conventionalcommits --commit-path commits.txt | jq -r .releaseType)
+          echo "Recommended bump: $BUMP"
+
+          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          echo "skip_release=false" >> $GITHUB_OUTPUT
+
+      - name: ❌ Exit if no release is needed
+        if: steps.bump.outputs.skip_release == 'true'
+        run: echo "✅ No release needed."
+
+      - name: 🛠️ Build and bundle Action
+        if: steps.bump.outputs.skip_release != 'true'
+        run: npm run build
+
+      - name: 🔢 Bump version and commit
+        if: steps.bump.outputs.skip_release != 'true'
+        id: versioning
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          NEW_VERSION=v$(npm version ${{ steps.bump.outputs.bump }} --no-git-tag-version)
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          git add package.json package-lock.json dist/
+          git commit -m "chore(release): release $NEW_VERSION" || echo "No changes to commit"
+
+      - name: 🏷️ Create and push version tag
+        if: steps.bump.outputs.skip_release != 'true'
+        run: |
+          VERSION=${{ steps.versioning.outputs.new_version }}
+          git tag $VERSION
+          git tag -f v1
+          git push origin $VERSION
+          git push origin v1 --force
+          git push origin HEAD
+
+      - name: 🚀 Create GitHub Release
+        if: steps.bump.outputs.skip_release != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.versioning.outputs.new_version }}
+          name: Release ${{ steps.versioning.outputs.new_version }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
