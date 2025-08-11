@@ -42,9 +42,7 @@ jobs:
             exit 0
           fi
 
-          echo "$COMMITS" > commits.txt
-
-          BUMP=$(conventional-recommended-bump -p conventionalcommits --commit-path commits.txt | jq -r .releaseType)
+          BUMP=$(conventional-recommended-bump -p conventionalcommits --tag-prefix "v" | jq -r .releaseType)
           echo "Recommended bump: $BUMP"
 
           echo "bump=$BUMP" >> $GITHUB_OUTPUT
